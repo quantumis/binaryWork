@@ -10,7 +10,6 @@ typedef struct {
 AB fileBinary(char binary_a[], char binary_b[], int bitsize) {
     std::string line;
     std::ifstream in("binary.txt");
-
     AB result;
 
     if (in.is_open())
@@ -63,15 +62,29 @@ void addedBinary(char binary[], int lenght) {
 void conjuction(int bitsize, char binary_a[], char binary_b[], char output[]) {
     for (int i = 0; i < bitsize; i++)
     {
-        if (binary_a[i] == '1' && binary_b[i] == '1') {
-            output[i] = '1';
-        }
-        else {
-            output[i] = '0';
-        }
+        output[i] = binary_a[i] == '1' && binary_b[i] == '1' ? output[i] = '1' : output[i] = '0';
     }
 
     output[bitsize] = 0;
+}
+
+void workFunction(char a[], char b[], int bitsize, int a_lenght, int b_lenght, char output[]) {
+    if (!isBinary(a, a_lenght) || !isBinary(b, b_lenght)) { exit(-1); }
+
+    addedBinary(a, a_lenght);
+    addedBinary(b, b_lenght);
+
+    conjuction(bitsize, a, b, output);
+}
+
+std::string createAnswer(char a[], char b[], char output[]){
+    std::string str = "\nКонъюнкция введеных двоичных чисел:\n\n";
+    str += a; str += "\n";
+    str += b; str += "\n";
+    str += "--------\n";
+    str += output; str += "\n";
+
+    return str;
 }
 
 int main() {
@@ -81,38 +94,35 @@ int main() {
     char a[bitsize + 1];
     char b[bitsize + 1];
     char output[bitsize + 1];
-
-    AB result = fileBinary(a, b, bitsize);
-    int a_lenght = result.a;
-    int b_lenght = result.b;
-
-    //int a_lenght = inBinary(a);
-    //int b_lenght = inBinary(b);
-
-    if (!isBinary(a, a_lenght) || !isBinary(b, b_lenght)) { return -1; }
-
-    addedBinary(a, a_lenght);
-    addedBinary(b, b_lenght);
-
-    conjuction(bitsize, a, b, output);
-
+    int a_lenght, b_lenght;
     std::ofstream out;
-    out.open("result.txt");
+    size_t answer;
 
-    if (out.is_open())
-    {
-        out << "Конъюнкция введеных двоичных чисел:" << std::endl << std::endl;
-        out << a << std::endl;
-        out << b << std::endl;
-        out << "--------" << std::endl;
-        out << output << std::endl;
+    std::cout << "Выберите желаемое действие (соответствующую цифру в консоль):" << std::endl;
+    std::cout << "1. Работа в консоли" << std::endl;
+    std::cout << "2. Работа с файлом" << std::endl;
+    std::cin >> answer;
+
+    switch (answer){
+        case 1:
+            a_lenght = inBinary(a);
+            b_lenght = inBinary(b);
+            workFunction(a, b, bitsize, a_lenght, b_lenght, output);
+            std::cout << createAnswer(a, b, output);
+
+            exit(0);
+        case 2:
+            AB result = fileBinary(a, b, bitsize);
+            a_lenght = result.a;
+            b_lenght = result.b;
+            workFunction(a, b, bitsize, a_lenght, b_lenght, output);
+            out.open("result.txt");
+            if (out.is_open()) { out << createAnswer(a, b, output); }
+            out.close();
+
+            exit(0);
+        default:
+            std::cout << "Неверное действие. Попробуйте еще раз" << "\n";
+            exit(-1);
     }
-
-    out.close();
-
-    std::cout << std::endl << "Конъюнкция введеных двоичных чисел:" << std::endl << std::endl;
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
-    std::cout << "--------" << std::endl;
-    std::cout << output << std::endl;
 }
