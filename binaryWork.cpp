@@ -1,21 +1,21 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
-
+using namespace std;
 
 class Binary {
-public:
+private:
     static const int bitsize = 8;
     char value[bitsize + 1];
     int lenght;
-
+public:
     Binary() {
         for (int i = 0; i < bitsize; i++) { value[i] = '0'; }
         value[bitsize] = 0;
-        lenght = std::strlen(value);
+        lenght = strlen(value);
     }
 
-    Binary(std::string param) {
+    Binary(string param) {
         for (int i = 0; i < param.length(); i++) { value[i] = param[i]; }
         value[bitsize] = 0;
         lenght = param.length();
@@ -26,34 +26,36 @@ public:
     //    for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
     //}
 
-    void fileBinary(std::string path) {
-        std::string line;
-        std::ifstream in(path);
+    char* getValue() { return value; }
+
+    void fileBinary(string path) {
+        string line;
+        ifstream in(path);
 
         if (in.is_open())
         {
-            if (std::getline(in, line)) {
+            if (getline(in, line)) {
                 for (int i = 0; i < line.length(); i++) {
-                    std::cout << line[i] << std::endl;
+                    cout << line[i] << endl;
                     value[i] = line[i];
                 }
             }
         }
         in.close();
         value[line.length() - 1] = 0;
-        lenght = std::strlen(value);
+        lenght = strlen(value);
     }
 
     void consoleBinary() {
-        std::cout << "Введите двоичное число (максимум 8 символов)" << std::endl;
-        std::cin >> value;
-        lenght = std::strlen(value);
+        cout << "Введите двоичное число (максимум 8 символов)" << endl;
+        cin >> value;
+        lenght = strlen(value);
     }
 
     bool isBinary() {
         for (int i = 0; i < lenght; i++) {
             if (value[i] != '0' && value[i] != '1') {
-                std::cout << "Число не является двоичным" << std::endl;
+                cout << "Число не является двоичным" << endl;
                 return false;
             }
         }
@@ -80,12 +82,12 @@ public:
 };
 
 
-std::string createAnswer(Binary a, Binary b, Binary output) {
-    std::string str = "\nКонъюнкция введеных двоичных чисел:\n\n";
-    str += a.value; str += "\n";
-    str += b.value; str += "\n";
+string createAnswer(Binary a, Binary b, Binary output) {
+    string str = "\nКонъюнкция введеных двоичных чисел:\n\n";
+    str += a.getValue(); str += "\n";
+    str += b.getValue(); str += "\n";
     str += "--------\n";
-    str += output.value; str += "\n";
+    str += output.getValue(); str += "\n";
 
     return str;
 }
@@ -93,10 +95,10 @@ std::string createAnswer(Binary a, Binary b, Binary output) {
 void dialogEvent(Binary& a) {
     size_t answer;
 
-    std::cout << "Выберите желаемое действие (соответствующую цифру в консоль):" << std::endl;
-    std::cout << "1. Работа в консоли" << std::endl;
-    std::cout << "2. Работа с файлом" << std::endl;
-    std::cin >> answer;
+    cout << "Выберите желаемое действие (соответствующую цифру в консоль):" << endl;
+    cout << "1. Работа в консоли" << endl;
+    cout << "2. Работа с файлом" << endl;
+    cin >> answer;
 
     switch (answer) {
     case 1:
@@ -106,7 +108,7 @@ void dialogEvent(Binary& a) {
         a.fileBinary("binary.txt");
         break;
     default:
-        std::cout << "Неверное действие. Попробуйте еще раз" << "\n";
+        cout << "Неверное действие. Попробуйте еще раз" << "\n";
         exit(-1);
     }
 }
@@ -119,7 +121,7 @@ int main() {
     dialogEvent(a);
     dialogEvent(b);
 
-    std::ofstream out;
+    ofstream out;
 
     if (!a.isBinary() || !b.isBinary()) { exit(-1); }
 
@@ -128,7 +130,7 @@ int main() {
 
     output = a.conjuction(b);
 
-    std::cout << createAnswer(a, b, output);
+    cout << createAnswer(a, b, output);
     out.open("result.txt");
     if (out.is_open()) { out << createAnswer(a, b, output); }
     out.close();
@@ -139,4 +141,3 @@ int main() {
 // Ввести динамические массивы
 // Конструктор копирования
 // Деструктор
-// Подумать над приватными полями
