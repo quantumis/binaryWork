@@ -2,100 +2,95 @@
 #include <fstream>
 #include <string>
 
-typedef struct {
-    size_t a;
-    size_t b;
-} AB;
 
-AB fileBinary(char binary_a[], char binary_b[], int bitsize) {
-    std::string line;
-    std::ifstream in("binary.txt");
-    AB result;
+class Binary {
+public:
+    static const int bitsize = 8;
+    char value[bitsize + 1];
+    int lenght;
 
-    if (in.is_open())
-    {
-        if (std::getline(in, line)) {
-            std::strncpy(binary_a, line.c_str(), bitsize);
-        }
-
-        if (std::getline(in, line)) {
-            std::strncpy(binary_b, line.c_str(), bitsize);
-        }
-    }
-    in.close();
-
-    result.a = std::strlen(binary_a);
-    result.b = std::strlen(binary_b);
-
-    return result;
-}
-
-size_t inBinary(char binary[]) {
-    std::cout << "Введите двоичное число (максимум 8 символов)" << std::endl;
-    std::cin >> binary;
-
-    return std::strlen(binary);
-}
-
-bool isBinary(char binary[], int lenght) {
-    for (int i = 0; i < lenght; i++) {
-        if (binary[i] != '0' && binary[i] != '1') {
-            std::cout << "Число не является двоичным" << std::endl;
-            return false;
-        }
-    }
-    return true;
-}
-
-void addedBinary(char binary[], int lenght) {
-    if (lenght < 8) {
-        for (int i = lenght; i >= 0; i--) {
-            binary[i + 8 - lenght] = binary[i];
-        }
-
-        for (int i = 0; i < 8 - lenght; i++) {
-            binary[i] = '0';
-        }
-    }
-}
-
-void conjuction(int bitsize, char binary_a[], char binary_b[], char output[]) {
-    for (int i = 0; i < bitsize; i++)
-    {
-        output[i] = binary_a[i] == '1' && binary_b[i] == '1' ? output[i] = '1' : output[i] = '0';
+    Binary() {
+        for (int i = 0; i < bitsize; i++) { value[i] = '0'; }
+        value[bitsize] = 0;
+        lenght = std::strlen(value);
     }
 
-    output[bitsize] = 0;
-}
+    Binary(std::string param) {
+        for (int i = 0; i < param.length(); i++) { value[i] = param[i]; }
+        value[bitsize] = 0;
+        lenght = param.length();
+    }
 
-void workFunction(char a[], char b[], int bitsize, int a_lenght, int b_lenght, char output[]) {
-    if (!isBinary(a, a_lenght) || !isBinary(b, b_lenght)) { exit(-1); }
+    //Binary(const Binary &a) {
+    //    lenght = 7;
+    //    for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
+    //}
 
-    addedBinary(a, a_lenght);
-    addedBinary(b, b_lenght);
+    void fileBinary(std::string path) {
+        std::string line;
+        std::ifstream in(path);
 
-    conjuction(bitsize, a, b, output);
-}
+        if (in.is_open())
+        {
+            if (std::getline(in, line)) {
+                for (int i = 0; i < line.length(); i++) {
+                    std::cout << line[i] << std::endl;
+                    value[i] = line[i];
+                }
+            }
+        }
+        in.close();
+        value[line.length() - 1] = 0;
+        lenght = std::strlen(value);
+    }
 
-std::string createAnswer(char a[], char b[], char output[]){
+    void consoleBinary() {
+        std::cout << "Введите двоичное число (максимум 8 символов)" << std::endl;
+        std::cin >> value;
+        lenght = std::strlen(value);
+    }
+
+    bool isBinary() {
+        for (int i = 0; i < lenght; i++) {
+            if (value[i] != '0' && value[i] != '1') {
+                std::cout << "Число не является двоичным" << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void addedBinary() {
+        if (lenght < bitsize) {
+            for (int i = lenght; i >= 0; i--) {
+                value[i + bitsize - lenght] = value[i];
+            }
+            for (int i = 0; i < bitsize - lenght; i++) {
+                value[i] = '0';
+            }
+        }
+    }
+
+    Binary conjuction(Binary b) {
+        Binary tmp;
+        for (int i = 0; i < bitsize; i++) { tmp.value[i] = value[i] == '1' && b.value[i] == '1' ? tmp.value[i] = '1' : tmp.value[i] = '0'; }
+        value[bitsize] = 0;
+        return tmp;
+    }
+};
+
+
+std::string createAnswer(Binary a, Binary b, Binary output) {
     std::string str = "\nКонъюнкция введеных двоичных чисел:\n\n";
-    str += a; str += "\n";
-    str += b; str += "\n";
+    str += a.value; str += "\n";
+    str += b.value; str += "\n";
     str += "--------\n";
-    str += output; str += "\n";
+    str += output.value; str += "\n";
 
     return str;
 }
 
-int main() {
-    setlocale(LC_ALL, "");
-
-    const int bitsize = 8;
-    char a[bitsize + 1];
-    char b[bitsize + 1];
-    char output[bitsize + 1];
-    int a_lenght, b_lenght;
-    std::ofstream out;
+void dialogEvent(Binary& a) {
     size_t answer;
 
     std::cout << "Выберите желаемое действие (соответствующую цифру в консоль):" << std::endl;
@@ -103,26 +98,45 @@ int main() {
     std::cout << "2. Работа с файлом" << std::endl;
     std::cin >> answer;
 
-    switch (answer){
-        case 1:
-            a_lenght = inBinary(a);
-            b_lenght = inBinary(b);
-            workFunction(a, b, bitsize, a_lenght, b_lenght, output);
-            std::cout << createAnswer(a, b, output);
-
-            exit(0);
-        case 2:
-            AB result = fileBinary(a, b, bitsize);
-            a_lenght = result.a;
-            b_lenght = result.b;
-            workFunction(a, b, bitsize, a_lenght, b_lenght, output);
-            out.open("result.txt");
-            if (out.is_open()) { out << createAnswer(a, b, output); }
-            out.close();
-
-            exit(0);
-        default:
-            std::cout << "Неверное действие. Попробуйте еще раз" << "\n";
-            exit(-1);
+    switch (answer) {
+    case 1:
+        a.consoleBinary();
+        break;
+    case 2:
+        a.fileBinary("binary.txt");
+        break;
+    default:
+        std::cout << "Неверное действие. Попробуйте еще раз" << "\n";
+        exit(-1);
     }
 }
+
+int main() {
+    setlocale(LC_ALL, "");
+
+    Binary a, b, c("11111111"), output;
+
+    dialogEvent(a);
+    dialogEvent(b);
+
+    std::ofstream out;
+
+    if (!a.isBinary() || !b.isBinary()) { exit(-1); }
+
+    a.addedBinary();
+    b.addedBinary();
+
+    output = a.conjuction(b);
+
+    std::cout << createAnswer(a, b, output);
+    out.open("result.txt");
+    if (out.is_open()) { out << createAnswer(a, b, output); }
+    out.close();
+
+    exit(0);
+}
+
+// Ввести динамические массивы
+// Конструктор копирования
+// Деструктор
+// Подумать над приватными полями
