@@ -5,88 +5,91 @@ using namespace std;
 
 class Binary {
 private:
-    static const int bitsize = 8;
-    char value[bitsize + 1];
+    char* value;
     int lenght;
+
+    void str_to_mas(string str){
+        lenght = str.length();
+        value = new char[lenght];
+
+        for (int i = 0; i < lenght; i++){
+            if (str[i] != '0' && str[i] != '1') {
+                cout << "Число не является двоичным" << endl;
+                exit(-1);
+            }
+            value[i] = str[i];
+        }
+        value[lenght] = 0;
+    }
 public:
-    Binary() {
-        for (int i = 0; i < bitsize; i++) { value[i] = '0'; }
-        value[bitsize] = 0;
-        lenght = strlen(value);
+    Binary() { value = 0; lenght = 0; }
+    Binary(string str) { str_to_mas(str); }
+    Binary(const Binary &a) { 
+        lenght = a.lenght;
+        value = new char[lenght];
+        for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
+        value[lenght] = 0;
     }
-
-    Binary(string param) {
-        for (int i = 0; i < param.length(); i++) { value[i] = param[i]; }
-        value[bitsize] = 0;
-        lenght = param.length();
-    }
-
-    //Binary(const Binary &a) {
-    //    lenght = 7;
-    //    for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
-    //}
+    ~Binary() {delete[] value; }
 
     char* getValue() { return value; }
+    int getLenght() { return lenght; }
+    void print(){ cout << value << endl;}
 
     void fileBinary(string path) {
         string line;
         ifstream in(path);
-
-        if (in.is_open())
-        {
-            if (getline(in, line)) {
-                for (int i = 0; i < line.length(); i++) {
-                    cout << line[i] << endl;
-                    value[i] = line[i];
-                }
-            }
-        }
+        if (in.is_open()) { if (getline(in, line)) { str_to_mas(line); } }
         in.close();
-        value[line.length() - 1] = 0;
-        lenght = strlen(value);
     }
 
     void consoleBinary() {
-        cout << "Введите двоичное число (максимум 8 символов)" << endl;
-        cin >> value;
-        lenght = strlen(value);
+        cout << "Введите двоичное число" << endl;
+        string str;
+        cin >> str;
+        str_to_mas(str);
     }
 
-    bool isBinary() {
-        for (int i = 0; i < lenght; i++) {
-            if (value[i] != '0' && value[i] != '1') {
-                cout << "Число не является двоичным" << endl;
-                return false;
+    void addedBinary(Binary& b, bool first) {
+        if (first){
+            for (int i = b.lenght; i >= 0; i--) {
+                b.value[i + lenght - b.lenght] = b.value[i];
             }
-        }
-        return true;
-    }
-
-    void addedBinary() {
-        if (lenght < bitsize) {
+            for (int i = 0; i < lenght - b.lenght; i++) {
+                b.value[i] = '0';
+            }
+            b.lenght = lenght;
+        }else {
             for (int i = lenght; i >= 0; i--) {
-                value[i + bitsize - lenght] = value[i];
+                value[i + b.lenght - lenght] = value[i];
             }
-            for (int i = 0; i < bitsize - lenght; i++) {
+            for (int i = 0; i < b.lenght - lenght; i++) {
                 value[i] = '0';
             }
+            lenght = b.lenght;
         }
     }
+    
+    Binary conjuction(Binary& b) {
+        if (lenght > b.lenght){
+            addedBinary(b, true);
+        }else if(b.lenght > lenght){
+            addedBinary(b, false);
+        }
 
-    Binary conjuction(Binary b) {
-        Binary tmp;
-        for (int i = 0; i < bitsize; i++) { tmp.value[i] = value[i] == '1' && b.value[i] == '1' ? tmp.value[i] = '1' : tmp.value[i] = '0'; }
-        value[bitsize] = 0;
+        Binary tmp(string(lenght, '0'));
+        for (int i = 0; i < lenght; i++) { tmp.value[i] = value[i] == '1' && b.value[i] == '1' ? tmp.value[i] = '1' : tmp.value[i] = '0'; }
+        tmp.value[lenght] = 0;
         return tmp;
     }
 };
 
 
-string createAnswer(Binary a, Binary b, Binary output) {
+string createAnswer(Binary& a, Binary& b, Binary& output) {
     string str = "\nКонъюнкция введеных двоичных чисел:\n\n";
     str += a.getValue(); str += "\n";
     str += b.getValue(); str += "\n";
-    str += "--------\n";
+    str += string(output.getLenght(), '-'); str += "\n";
     str += output.getValue(); str += "\n";
 
     return str;
@@ -115,29 +118,19 @@ void dialogEvent(Binary& a) {
 
 int main() {
     setlocale(LC_ALL, "");
-
-    Binary a, b, c("11111111"), output;
+    Binary a, b;
 
     dialogEvent(a);
     dialogEvent(b);
 
-    ofstream out;
-
-    if (!a.isBinary() || !b.isBinary()) { exit(-1); }
-
-    a.addedBinary();
-    b.addedBinary();
-
-    output = a.conjuction(b);
+    Binary output = a.conjuction(b);
 
     cout << createAnswer(a, b, output);
+
+    ofstream out;
     out.open("result.txt");
     if (out.is_open()) { out << createAnswer(a, b, output); }
     out.close();
 
     exit(0);
 }
-
-// Ввести динамические массивы
-// Конструктор копирования
-// Деструктор
