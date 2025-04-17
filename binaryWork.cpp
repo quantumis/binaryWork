@@ -8,39 +8,46 @@ private:
     char* value;
     int lenght;
 
-    void str_to_mas(string str){
+    void str_to_mas(string str) {
         lenght = str.length();
         value = new char[lenght];
-
-        for (int i = 0; i < lenght; i++){
-            if (str[i] != '0' && str[i] != '1') {
-                cout << "Число не является двоичным" << endl;
-                exit(-1);
+        try {
+            for (int i = 0; i < lenght; i++) {
+                if (str[i] != '0' && str[i] != '1') { throw "Число не является двоичным"; }
+                value[i] = str[i];
             }
-            value[i] = str[i];
+            value[lenght] = 0;
+        } catch (const char* error){
+            cout << error << endl;
+            exit(-1);
         }
-        value[lenght] = 0;
     }
 public:
     Binary() { value = 0; lenght = 0; }
     Binary(string str) { str_to_mas(str); }
-    Binary(const Binary &a) { 
+    Binary(const Binary& a) {
         lenght = a.lenght;
         value = new char[lenght];
         for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
         value[lenght] = 0;
     }
-    ~Binary() {delete[] value; }
+    ~Binary() { delete[] value; }
 
     char* getValue() { return value; }
     int getLenght() { return lenght; }
-    void print(){ cout << value << endl;}
+    void print() { cout << value << endl; }
 
     void fileBinary(string path) {
         string line;
         ifstream in(path);
-        if (in.is_open()) { if (getline(in, line)) { str_to_mas(line); } }
-        in.close();
+
+        try{
+            if (in.is_open()) { if (getline(in, line)) { str_to_mas(line); } else { throw "Ошибка при чтении файла"; } }else { throw "Ошибка при открытии файла"; }
+            in.close();
+        } catch (const char* error) {
+            cout << error << endl;
+            exit(-1);
+        }
     }
 
     void consoleBinary() {
@@ -51,7 +58,7 @@ public:
     }
 
     void addedBinary(Binary& b, bool first) {
-        if (first){
+        if (first) {
             for (int i = b.lenght; i >= 0; i--) {
                 b.value[i + lenght - b.lenght] = b.value[i];
             }
@@ -59,7 +66,8 @@ public:
                 b.value[i] = '0';
             }
             b.lenght = lenght;
-        }else {
+        }
+        else {
             for (int i = lenght; i >= 0; i--) {
                 value[i + b.lenght - lenght] = value[i];
             }
@@ -69,11 +77,12 @@ public:
             lenght = b.lenght;
         }
     }
-    
+
     Binary conjuction(Binary& b) {
-        if (lenght > b.lenght){
+        if (lenght > b.lenght) {
             addedBinary(b, true);
-        }else if(b.lenght > lenght){
+        }
+        else if (b.lenght > lenght) {
             addedBinary(b, false);
         }
 
@@ -103,15 +112,19 @@ void dialogEvent(Binary& a) {
     cout << "2. Работа с файлом" << endl;
     cin >> answer;
 
-    switch (answer) {
-    case 1:
-        a.consoleBinary();
-        break;
-    case 2:
-        a.fileBinary("binary.txt");
-        break;
-    default:
-        cout << "Неверное действие. Попробуйте еще раз" << "\n";
+    try{
+        switch (answer) {
+        case 1:
+            a.consoleBinary();
+            break;
+        case 2:
+            a.fileBinary("binary.txt");
+            break;
+        default:
+            throw "Неверное действие. Попробуйте еще раз\n";
+        }
+    }catch (const char* error) {
+        cout << error << endl;
         exit(-1);
     }
 }
@@ -129,8 +142,14 @@ int main() {
 
     ofstream out;
     out.open("result.txt");
-    if (out.is_open()) { out << createAnswer(a, b, output); }
-    out.close();
 
+    try{
+        if (out.is_open()) { out << createAnswer(a, b, output); }else { throw "Ошибка при открытии файла";}
+        out.close();
+    }catch (const char* error){
+        cout << error << endl;
+        exit(-1);
+    }
+    
     exit(0);
 }
