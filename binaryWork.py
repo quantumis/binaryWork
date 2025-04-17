@@ -8,12 +8,28 @@ class Binary:
                 exit(-1)
         else:
             self.value = []
+    def __and__(self, other):
+        max_len = max(len(self.value), len(other.value))
+        self.added_binary(max_len)
+        other.added_binary(max_len)
+        
+        temp = Binary()
+        temp.value = ['1' if x == '1' and y == '1' else '0' for x, y in zip(self.value, other.value)]
+        return temp
+    def __gt__(self, other):
+         return int("".join(self.value)) > int("".join(other.value))
+    def __lt__(self, other):
+        return int("".join(self.value)) < int("".join(other.value))
     def __str__(self):
         return ''.join(self.value)
 
     def added_binary(self, length):
         self.value = ['0'] * (length - len(self.value)) + self.value
     def conjunction(self, b):
+        max_len = max(len(self.value), len(b.value))
+        self.added_binary(max_len)
+        b.added_binary(max_len)
+        
         temp = Binary()
         temp.value = ['1' if x == '1' and y == '1' else '0' for x, y in zip(self.value, b.value)]
         return temp
@@ -42,11 +58,6 @@ def dialog_event():
 if __name__ == "__main__":
     a = dialog_event()
     b = dialog_event()
-
-    max_len = max(len(a.value), len(b.value))
-    a.added_binary(max_len)
-    b.added_binary(max_len)
-
     out = a.conjunction(b)
 
     print(output(a, b, out))

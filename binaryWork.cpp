@@ -17,7 +17,8 @@ private:
                 value[i] = str[i];
             }
             value[lenght] = 0;
-        } catch (const char* error){
+        }
+        catch (const char* error) {
             cout << error << endl;
             exit(-1);
         }
@@ -31,7 +32,6 @@ public:
         for (int i = 0; i < lenght; i++) { value[i] = a.value[i]; }
         value[lenght] = 0;
     }
-    ~Binary() { delete[] value; }
 
     char* getValue() { return value; }
     int getLenght() { return lenght; }
@@ -41,10 +41,12 @@ public:
         string line;
         ifstream in(path);
 
-        try{
-            if (in.is_open()) { if (getline(in, line)) { str_to_mas(line); } else { throw "Ошибка при чтении файла"; } }else { throw "Ошибка при открытии файла"; }
+        try {
+            if (in.is_open()) { if (getline(in, line)) { str_to_mas(line); } else { throw "Ошибка при чтении файла"; } }
+            else { throw "Ошибка при открытии файла"; }
             in.close();
-        } catch (const char* error) {
+        }
+        catch (const char* error) {
             cout << error << endl;
             exit(-1);
         }
@@ -79,18 +81,34 @@ public:
     }
 
     Binary conjuction(Binary& b) {
-        if (lenght > b.lenght) {
-            addedBinary(b, true);
-        }
-        else if (b.lenght > lenght) {
-            addedBinary(b, false);
-        }
-
+        addedBinary(b, lenght > b.lenght);
         Binary tmp(string(lenght, '0'));
         for (int i = 0; i < lenght; i++) { tmp.value[i] = value[i] == '1' && b.value[i] == '1' ? tmp.value[i] = '1' : tmp.value[i] = '0'; }
         tmp.value[lenght] = 0;
         return tmp;
     }
+
+    Binary& operator = (const Binary& binary){
+        value = binary.value;
+        lenght = binary.lenght;
+        return *this;
+    }
+
+    Binary operator & (const Binary& b) const{
+        try {
+            if (lenght != b.lenght) { throw "Невозможно применять опертор при разных длинах. Убедитесь, что операнды одинаковой длины или воспользуйтесь функцией (a.addedBinary(b, a.lenght > b.lenght))"; }
+            string b_str = string(lenght, '0');
+            for (int i = 0; i < lenght; i++) { b_str[i] = value[i] == '1' && b.value[i] == '1' ? b_str[i] = '1' : b_str[i] = '0'; }
+            b_str[lenght] = 0;
+            return Binary(b_str);
+        }catch (const char* error) {
+            cout << error << endl;
+            exit(-1);
+        }
+    }
+
+    bool operator > (const Binary& binary) const { return stoi(value) > stoi(binary.value); }
+    bool operator < (const Binary& binary) const { return stoi(value) < stoi(binary.value); }
 };
 
 
@@ -112,7 +130,7 @@ void dialogEvent(Binary& a) {
     cout << "2. Работа с файлом" << endl;
     cin >> answer;
 
-    try{
+    try {
         switch (answer) {
         case 1:
             a.consoleBinary();
@@ -123,7 +141,8 @@ void dialogEvent(Binary& a) {
         default:
             throw "Неверное действие. Попробуйте еще раз\n";
         }
-    }catch (const char* error) {
+    }
+    catch (const char* error) {
         cout << error << endl;
         exit(-1);
     }
@@ -135,7 +154,7 @@ int main() {
 
     dialogEvent(a);
     dialogEvent(b);
-
+    Binary f = a & b;
     Binary output = a.conjuction(b);
 
     cout << createAnswer(a, b, output);
@@ -143,10 +162,12 @@ int main() {
     ofstream out;
     out.open("result.txt");
 
-    try{
-        if (out.is_open()) { out << createAnswer(a, b, output); }else { throw "Ошибка при открытии файла";}
+    try {
+        if (out.is_open()) { out << createAnswer(a, b, output); }
+        else { throw "Ошибка при открытии файла"; }
         out.close();
-    }catch (const char* error){
+    }
+    catch (const char* error) {
         cout << error << endl;
         exit(-1);
     }
